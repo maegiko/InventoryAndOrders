@@ -62,7 +62,27 @@ public class ProductServices
             WHERE Id = @Id AND IsDeleted = 0;
         ";
 
-        int rowsAffected = conn.Execute(sql, new { Id = id});
+        int rowsAffected = conn.Execute(sql, new { Id = id });
         return rowsAffected > 0;
+    }
+
+    // Updates name and/or price of a product
+    public Product? Update(int id, PatchProductRequest request)
+    {   
+        using SqliteConnection conn = _db.CreateConnection();
+
+        string sql = @"
+            UPDATE Products
+            SET Name = COALESCE(@Name, Name),
+                Price = COALESCE(@Price, Price)
+            WHERE Id = @Id AND IsDeleted = 0;
+        ";
+
+        conn.Execute(sql, new { Id = id, Name = request.Name, Price = request.Price });
+
+        return conn.QuerySingleOrDefault<Product>(
+            "SELECT * FROM Products WHERE Id = @Id and IsDeleted = 0;",
+            new { Id = id }
+        );
     }
 }
