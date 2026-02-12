@@ -49,7 +49,7 @@ using (IServiceScope scope = app.Services.CreateScope())
 /// </summary>
 app.MapGet("/products", (ProductServices products) =>
 {
-   return Results.Ok(products.List());
+    return Results.Ok(products.List());
 });
 
 /// <summary>
@@ -73,7 +73,7 @@ app.MapGet("/products/{id}", (int id, ProductServices products) =>
 {
     Product? product = products.Get(id);
 
-    if (product == null) return Results.NotFound(new { message = "Product was not found." });
+    if (product is null) return Results.NotFound(new { message = "Product was not found." });
 
     return Results.Ok(product);
 });
@@ -88,10 +88,35 @@ app.MapDelete("/products/{id}", (int id, ProductServices products) =>
     if (!isDeleted)
     {
         return Results.NotFound(new { message = "Product was not found." });
-    } 
+    }
     else
     {
         return Results.NoContent();
+    }
+});
+
+/// <summary>
+/// Update the name and/or price of a product
+/// </summary>
+app.MapPatch("/products/{id}", (int id, ProductServices products, PatchProductRequest req) =>
+{   
+    // Error Handling
+    if (req.Name is null && req.Price is null) 
+        return Results.BadRequest("At least one field must be provided for an update.");
+    if (req.Name is not null && string.IsNullOrWhiteSpace(req.Name)) 
+        return Results.BadRequest("Name cannot be empty.");
+    if (req.Price is not null && req.Price < 0)
+        return Results.BadRequest("Price must be >= 0.");
+
+    Product? product = products.Update(id, req);
+
+    if (product is null)
+    {
+        return Results.NotFound(new { message = "Product was not found." });
+    }
+    else
+    {
+        return Results.Ok(product);
     }
 });
 
