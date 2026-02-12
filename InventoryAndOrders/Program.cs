@@ -1,7 +1,10 @@
 using Dapper;
 using InventoryAndOrders.Data;
+using InventoryAndOrders.Models;
+using InventoryAndOrders.Services;
+using Microsoft.Data.Sqlite;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
@@ -14,16 +17,17 @@ if (connectionString is null)
 }
 
 builder.Services.AddSingleton(new Db(connectionString));
+builder.Services.AddScoped<ProductServices>();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+using (IServiceScope scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<Db>();
-    using var conn = db.CreateConnection();
+    Db db = scope.ServiceProvider.GetRequiredService<Db>();
+    using SqliteConnection conn = db.CreateConnection();
     conn.Open();
 
-    var sql = @"
+    string sql = @"
         CREATE TABLE IF NOT EXISTS Products (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Name TEXT NOT NULL,
@@ -35,6 +39,23 @@ using (var scope = app.Services.CreateScope())
 
     conn.Execute(sql);
 }
+
+// Endpoints
+app.MapGet("/products", (ProductServices products) =>
+{
+   return Results.Ok(products.List());
+});
+
+app.MapPost("/products", (NewProductRequest req, ProductServices products) =>
+{
+    // Error checking
+    if (string.IsNullOrWhiteSpace(req.Name)) return Results.BadRequest("Name cannot be empty.");
+    if (req.Price < 0) return Results.BadRequest("Price must be >= 0.");
+    if (req.TotalStock < 0) return Results.BadRequest("TotalStock must be >= 0.");
+
+    Product created = products.Add(req);
+    return Results.Created($"/products/${created.Id}", created);
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
