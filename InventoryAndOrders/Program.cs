@@ -41,11 +41,18 @@ using (IServiceScope scope = app.Services.CreateScope())
 }
 
 // Endpoints
+
+/// <summary>
+/// Get a list of all the available products>
+/// </summary>
 app.MapGet("/products", (ProductServices products) =>
 {
    return Results.Ok(products.List());
 });
 
+/// <summary>
+/// Add a product to the database
+/// </summary>
 app.MapPost("/products", (NewProductRequest req, ProductServices products) =>
 {
     // Error checking
@@ -55,6 +62,18 @@ app.MapPost("/products", (NewProductRequest req, ProductServices products) =>
 
     Product created = products.Add(req);
     return Results.Created($"/products/{created.Id}", created);
+});
+
+/// <summary>
+/// View the details of a single product
+/// </summary>
+app.MapGet("/products/{id}", (int id, ProductServices products) =>
+{
+    Product? product = products.Get(id);
+
+    if (product == null) return Results.NotFound(new { message = "Product was not found. "});
+
+    return Results.Ok(product);
 });
 
 // Configure the HTTP request pipeline.
