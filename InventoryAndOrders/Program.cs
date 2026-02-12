@@ -54,7 +54,7 @@ app.MapPost("/products", (NewProductRequest req, ProductServices products) =>
     if (req.TotalStock < 0) return Results.BadRequest("TotalStock must be >= 0.");
 
     Product created = products.Add(req);
-    return Results.Created($"/products/${created.Id}", created);
+    return Results.Created($"/products/{created.Id}", created);
 });
 
 // Configure the HTTP request pipeline.
