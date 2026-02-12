@@ -39,4 +39,14 @@ public class ProductServices
             new { Id = id }
         );
     }
+
+    public Product? Get(int id)
+    {
+        using SqliteConnection conn = _db.CreateConnection();
+
+        return conn.QuerySingleOrDefault<Product>(
+            "SELECT * FROM Products WHERE Id = @Id;",
+            new { Id = id }
+        );
+    }
 }
