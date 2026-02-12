@@ -18,7 +18,7 @@ public class ProductServices
     public IEnumerable<Product> List()
     {
         using SqliteConnection conn = _db.CreateConnection();
-        return conn.Query<Product>("SELECT * FROM Products ORDER BY Id");
+        return conn.Query<Product>("SELECT * FROM Products WHERE IsDeleted = 0 ORDER BY Id");
     }
 
     // Add a new product to Db
@@ -40,13 +40,29 @@ public class ProductServices
         );
     }
 
+    // Get the details of a single product 
     public Product? Get(int id)
     {
         using SqliteConnection conn = _db.CreateConnection();
 
         return conn.QuerySingleOrDefault<Product>(
-            "SELECT * FROM Products WHERE Id = @Id;",
+            "SELECT * FROM Products WHERE Id = @Id AND IsDeleted = 0;",
             new { Id = id }
         );
+    }
+
+    // Delete a product from the database
+    public bool Delete(int id)
+    {
+        using SqliteConnection conn = _db.CreateConnection();
+
+        string sql = @"
+            UPDATE Products
+            SET IsDeleted = 1
+            WHERE Id = @Id AND IsDeleted = 0;
+        ";
+
+        int rowsAffected = conn.Execute(sql, new { Id = id});
+        return rowsAffected > 0;
     }
 }

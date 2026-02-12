@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using Dapper;
 using InventoryAndOrders.Data;
 using InventoryAndOrders.Models;
@@ -32,6 +33,7 @@ using (IServiceScope scope = app.Services.CreateScope())
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Name TEXT NOT NULL,
             Price REAL NOT NULL,
+            IsDeleted INTEGER NOT NULL DEFAULT 0,
             TotalStock INTEGER NOT NULL,
             ReservedStock INTEGER NOT NULL
         );
@@ -71,9 +73,26 @@ app.MapGet("/products/{id}", (int id, ProductServices products) =>
 {
     Product? product = products.Get(id);
 
-    if (product == null) return Results.NotFound(new { message = "Product was not found. "});
+    if (product == null) return Results.NotFound(new { message = "Product was not found." });
 
     return Results.Ok(product);
+});
+
+/// <summary>
+/// Mark a product as deleted
+/// </summary>
+app.MapDelete("/products/{id}", (int id, ProductServices products) =>
+{
+    bool isDeleted = products.Delete(id);
+
+    if (!isDeleted)
+    {
+        return Results.NotFound(new { message = "Product was not found." });
+    } 
+    else
+    {
+        return Results.NoContent();
+    }
 });
 
 // Configure the HTTP request pipeline.
