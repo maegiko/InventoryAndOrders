@@ -34,6 +34,8 @@ using (IServiceScope scope = app.Services.CreateScope())
             Name TEXT NOT NULL,
             Price REAL NOT NULL,
             IsDeleted INTEGER NOT NULL DEFAULT 0,
+            CreatedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+            LastEdited TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
             TotalStock INTEGER NOT NULL,
             ReservedStock INTEGER NOT NULL
         );
