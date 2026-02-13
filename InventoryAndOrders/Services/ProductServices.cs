@@ -74,7 +74,7 @@ public class ProductServices
 
     // Updates name and/or price of a product
     public Product? Update(int id, PatchProductRequest request)
-    {   
+    {
         using SqliteConnection conn = _db.CreateConnection();
 
         string sql = @"
