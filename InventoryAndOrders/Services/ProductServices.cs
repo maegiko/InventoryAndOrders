@@ -1,6 +1,7 @@
 using Dapper;
 using InventoryAndOrders.Models;
 using InventoryAndOrders.Data;
+using InventoryAndOrders.DTOs;
 using Microsoft.Data.Sqlite;
 
 namespace InventoryAndOrders.Services;
@@ -33,7 +34,7 @@ public class ProductServices
             SELECT last_insert_rowid();
         ";
 
-        long id = conn.ExecuteScalar<long>(
+        int id = conn.ExecuteScalar<int>(
             sql,
             new { req.Name, req.Price, req.TotalStock, NowUtc = nowUtc }
         );
