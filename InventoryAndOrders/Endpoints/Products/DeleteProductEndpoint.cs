@@ -4,11 +4,11 @@ using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints.Products;
 
-public class DeleteProduct : Endpoint<GetProductByIdRequest, object>
+public class DeleteProductEndpoint : Endpoint<GetProductByIdRequest, object>
 {
     private readonly ProductServices _products;
 
-    public DeleteProduct(ProductServices products)
+    public DeleteProductEndpoint(ProductServices products)
     {
         _products = products;
     }
@@ -45,7 +45,7 @@ public class DeleteProduct : Endpoint<GetProductByIdRequest, object>
         if (!isDeleted)
         {
             await Send.ResponseAsync(
-                new { message = "Product was not found." },
+                new ApiErrorResponse { Message = "Product was not found." },
                 StatusCodes.Status404NotFound,
                 ct
             );

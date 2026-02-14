@@ -23,7 +23,7 @@ public class ProductServices
     }
 
     // Add a new product to Db
-    public Product Add(NewProductRequest req)
+    public Product Create(CreateProductRequest req)
     {
         using SqliteConnection conn = _db.CreateConnection();
         string nowUtc = DateTimeOffset.UtcNow.ToString("O");
@@ -73,7 +73,7 @@ public class ProductServices
     }
 
     // Updates name and/or price of a product
-    public Product? Update(int id, PatchProductRequest request)
+    public Product? Update(int id, UpdateProductRequest request)
     {
         using SqliteConnection conn = _db.CreateConnection();
 

@@ -4,11 +4,11 @@ using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints.Products;
 
-public class ListProducts : EndpointWithoutRequest<IEnumerable<Product>>
+public class ListProductsEndpoint : EndpointWithoutRequest<IEnumerable<Product>>
 {
     private readonly ProductServices _products;
 
-    public ListProducts(ProductServices products)
+    public ListProductsEndpoint(ProductServices products)
     {
         _products = products;
     }

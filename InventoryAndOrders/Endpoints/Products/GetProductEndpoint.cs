@@ -5,11 +5,11 @@ using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints.Products;
 
-public class ViewSingleProduct : Endpoint<GetProductByIdRequest, object>
+public class GetProductEndpoint : Endpoint<GetProductByIdRequest, object>
 {
     private readonly ProductServices _products;
 
-    public ViewSingleProduct(ProductServices products)
+    public GetProductEndpoint(ProductServices products)
     {
         _products = products;
     }
@@ -32,7 +32,7 @@ public class ViewSingleProduct : Endpoint<GetProductByIdRequest, object>
         if (product is null)
         {
             await Send.ResponseAsync(
-                new { message = "Product was not found." },
+                new ApiErrorResponse { Message = "Product was not found." },
                 StatusCodes.Status404NotFound,
                 ct
             );

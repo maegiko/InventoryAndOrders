@@ -5,11 +5,11 @@ using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints.Products;
 
-public class AddProduct : Endpoint<NewProductRequest, object>
+public class CreateProductEndpoint : Endpoint<CreateProductRequest, object>
 {
     private readonly ProductServices _products;
 
-    public AddProduct(ProductServices products)
+    public CreateProductEndpoint(ProductServices products)
     {
         _products = products;
     }
@@ -39,7 +39,7 @@ public class AddProduct : Endpoint<NewProductRequest, object>
         });
     }
 
-    public override async Task HandleAsync(NewProductRequest req, CancellationToken ct)
+    public override async Task HandleAsync(CreateProductRequest req, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(req.Name))
         {
@@ -71,8 +71,8 @@ public class AddProduct : Endpoint<NewProductRequest, object>
             return;
         }
 
-        Product created = _products.Add(req);
-        await Send.CreatedAtAsync<ViewSingleProduct>(
+        Product created = _products.Create(req);
+        await Send.CreatedAtAsync<GetProductEndpoint>(
             new { id = created.Id },
             created,
             cancellation: ct

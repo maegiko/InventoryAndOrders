@@ -5,11 +5,11 @@ using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints.Products;
 
-public class UpdateProduct : Endpoint<PatchProductRequest, object>
+public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, object>
 {
     private readonly ProductServices _products;
 
-    public UpdateProduct(ProductServices products)
+    public UpdateProductEndpoint(ProductServices products)
     {
         _products = products;
     }
@@ -44,12 +44,12 @@ public class UpdateProduct : Endpoint<PatchProductRequest, object>
         });
     }
 
-    public override async Task HandleAsync(PatchProductRequest req, CancellationToken ct)
+    public override async Task HandleAsync(UpdateProductRequest req, CancellationToken ct)
     {
         if (req.Name is null && req.Price is null)
         {
             await Send.ResponseAsync(
-                new { message = "At least one field must be provided for an update." },
+                new ApiErrorResponse { Message = "At least one field must be provided for an update." },
                 StatusCodes.Status400BadRequest,
                 ct
             );
@@ -59,7 +59,7 @@ public class UpdateProduct : Endpoint<PatchProductRequest, object>
         if (req.Name is not null && string.IsNullOrWhiteSpace(req.Name))
         {
             await Send.ResponseAsync(
-                new { message = "Name cannot be empty." },
+                new ApiErrorResponse { Message = "Name cannot be empty." },
                 StatusCodes.Status400BadRequest,
                 ct
             );
@@ -69,7 +69,7 @@ public class UpdateProduct : Endpoint<PatchProductRequest, object>
         if (req.Price is not null && req.Price < 0)
         {
             await Send.ResponseAsync(
-                new { message = "Price must be >= 0." },
+                new ApiErrorResponse { Message = "Price must be >= 0." },
                 StatusCodes.Status400BadRequest,
                 ct
             );
@@ -81,7 +81,7 @@ public class UpdateProduct : Endpoint<PatchProductRequest, object>
         if (product is null)
         {
             await Send.ResponseAsync(
-                new { message = "Product was not found." },
+                new ApiErrorResponse { Message = "Product was not found." },
                 StatusCodes.Status404NotFound,
                 ct
             );
