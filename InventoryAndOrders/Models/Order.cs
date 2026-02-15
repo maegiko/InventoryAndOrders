@@ -9,16 +9,17 @@ public class Order
     public string GuestToken { get; set; } = "";
 
     public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime LastEdited { get; set; }
 
     public List<OrderItem> Items { get; set; } = [];
     public OrderStatus OrderStatus { get; set; }
+    public DateTime? CancelledAt { get; set; }
 
     public PaymentStatus PaymentStatus { get; set; }
     public DateTime? PaidAt { get; set; }
 
     public ReservationStatus ReservationStatus { get; set; }
-    public DateTime? ReservedAt { get; set; }
+    public DateTime ReservedAt { get; set; }
 
     public CustomerInfo CustomerInfo { get; set; } = new();
     public Address ShippingAddress { get; set; } = new();
