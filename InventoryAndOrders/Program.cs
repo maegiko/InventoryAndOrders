@@ -27,20 +27,9 @@ using (IServiceScope scope = app.Services.CreateScope())
     using SqliteConnection conn = db.CreateConnection();
     conn.Open();
 
-    string sql = @"
-        CREATE TABLE IF NOT EXISTS Products (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Name TEXT NOT NULL,
-            Price REAL NOT NULL,
-            IsDeleted INTEGER NOT NULL DEFAULT 0,
-            CreatedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-            LastEdited TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-            TotalStock INTEGER NOT NULL,
-            ReservedStock INTEGER NOT NULL
-        );
-    ";
+    conn.Execute("PRAGMA foreign_keys = ON;");
 
-    conn.Execute(sql);
+    Schema.EnsureCreated(conn);
 }
 
 // Configure the HTTP request pipeline.
