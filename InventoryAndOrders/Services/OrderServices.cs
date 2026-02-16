@@ -98,11 +98,12 @@ public class OrderServices
             transaction.Commit();
 
             // Create response object
-            return new CreateOrderResponse { 
-                OrderNumber = orderNumber, 
-                GuestToken = guestToken, 
-                OrderStatus = OrderStatus.Pending, 
-                PaymentStatus = PaymentStatus.Unpaid, 
+            return new CreateOrderResponse
+            {
+                OrderNumber = orderNumber,
+                GuestToken = guestToken,
+                OrderStatus = OrderStatus.Pending,
+                PaymentStatus = PaymentStatus.Unpaid,
                 TotalPrice = totalPrice
             };
         }
@@ -117,8 +118,8 @@ public class OrderServices
         List<CreateOrderItem> items,
         IReadOnlyDictionary<int, Product> products)
     {
-        foreach(CreateOrderItem item in items)
-        {   
+        foreach (CreateOrderItem item in items)
+        {
             if (!products.TryGetValue(item.ProductId, out Product? product))
                 throw new ProductNotFoundException(item.ProductId);
 
@@ -137,7 +138,7 @@ public class OrderServices
     {
         ValidateOrderItems(items, products);
 
-        foreach(CreateOrderItem item in items)
+        foreach (CreateOrderItem item in items)
         {
             // Reserve Stock
             string reserveSql = @"
@@ -146,10 +147,10 @@ public class OrderServices
                 WHERE Id = @ProductId AND IsDeleted = 0 AND (TotalStock - ReservedStock) >= @Quantity;
             ";
 
-           int rowsAffected = conn.Execute(
-            reserveSql, 
-            new { ProductId = item.ProductId, Quantity = item.Quantity }, 
-            transaction);
+            int rowsAffected = conn.Execute(
+             reserveSql,
+             new { ProductId = item.ProductId, Quantity = item.Quantity },
+             transaction);
 
             if (rowsAffected != 1)
             {
@@ -162,9 +163,10 @@ public class OrderServices
                 VALUES (@OrderId, @ProductId, @ProductName, @UnitPrice, @Quantity);
             ";
 
-            conn.Execute(orderItemsSql, new { 
+            conn.Execute(orderItemsSql, new
+            {
                 OrderId = orderId,
-                item.ProductId, 
+                item.ProductId,
                 ProductName = products[item.ProductId].Name,
                 UnitPrice = products[item.ProductId].Price,
                 item.Quantity
@@ -187,7 +189,7 @@ public class OrderServices
     }
 
     private static decimal CalculateTotalPrice(
-        List<CreateOrderItem> items, 
+        List<CreateOrderItem> items,
         IReadOnlyDictionary<int, Product> products)
     {
         return items.Sum(i => products[i.ProductId].Price * i.Quantity);
