@@ -39,6 +39,7 @@ public static class Schema
 
                 ReservationStatus INTEGER NOT NULL,
                 ReservedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+                TotalPrice REAL NOT NULL DEFAULT 0,
                 CustomerFirstName TEXT NOT NULL,
 
                 CustomerLastName TEXT NOT NULL,
