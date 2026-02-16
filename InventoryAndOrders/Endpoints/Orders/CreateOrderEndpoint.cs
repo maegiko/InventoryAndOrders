@@ -41,7 +41,7 @@ public class CreateOrderEndpoint : Endpoint<CreateOrderRequest, CreateOrderRespo
                 - 'Postcode' is missing or empty
                 - 'Country' is missing or empty
                 - No items are present in order
-                - 'ProductId' or 'Quantity' are negative
+                - 'ProductId' or 'Quantity' <= 0
                 """,
                 "application/json"
             );
