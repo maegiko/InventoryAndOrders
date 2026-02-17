@@ -9,15 +9,15 @@ public class CreateOrderResponse
     public decimal TotalPrice { get; set; }
 }
 
-public class ViewOrderResponse
+public class GetOrderResponse
 {
-    public string OrderNumber { get; set; }= "";
+    public string OrderNumber { get; set; } = "";
     public string OrderStatus { get; set; } = "";
     public string PaymentStatus { get; set; } = "";
-    public List<ViewOrderItem> Items { get; set; } = new();
+    public List<GetOrderItem> Items { get; set; } = new();
 }
 
-public class ViewOrderItem
+public class GetOrderItem
 {
     public string ProductName { get; set; } = "";
     public int Quantity { get; set; }
