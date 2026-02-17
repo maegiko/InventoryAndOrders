@@ -69,5 +69,17 @@ public static class Schema
         ";
 
         conn.Execute(orderItemsSql);
+
+        string accountSql = @"
+            CREATE TABLE IF NOT EXISTS Accounts (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Username TEXT NOT NULL UNIQUE,
+                Email TEXT NOT NULL UNIQUE,
+                PasswordHash TEXT NOT NULL,
+                CreatedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+            );
+        ";
+
+        conn.Execute(accountSql);
     }
 }
