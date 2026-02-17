@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 using InventoryAndOrders.DTOs;
 using InventoryAndOrders.Models;
 using System.Text.Json;
@@ -178,15 +177,11 @@ public class OrderEndpointsTests
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
 
-        using HttpRequestMessage req = new(HttpMethod.Post, "/orders/ORD-000001/cancel");
-        req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response = await client.SendAsync(req);
+        HttpResponseMessage response = await client.PostAsync("/orders/ORD-000001/cancel", content: null);
         string content = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Contains("\"statusCode\":400", content);
-        Assert.Contains("\"errors\"", content);
+        Assert.Contains("Guest Token cannot be missing.", content);
     }
 
     [Fact]
@@ -243,7 +238,6 @@ public class OrderEndpointsTests
     {
         using HttpRequestMessage req = new(HttpMethod.Post, $"/orders/{orderNumber}/cancel");
         req.Headers.Add("X-Guest-Token", guestToken);
-        req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
         return await client.SendAsync(req);
     }

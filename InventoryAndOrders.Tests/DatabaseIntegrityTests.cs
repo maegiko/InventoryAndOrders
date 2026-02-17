@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 using InventoryAndOrders.Data;
 using InventoryAndOrders.DTOs;
 using InventoryAndOrders.Enums;
@@ -202,7 +201,6 @@ public class DatabaseIntegrityTests
 
         using HttpRequestMessage cancelReq = new(HttpMethod.Post, $"/orders/{createdOrder.OrderNumber}/cancel");
         cancelReq.Headers.Add("X-Guest-Token", createdOrder.GuestToken);
-        cancelReq.Content = new StringContent("{}", Encoding.UTF8, "application/json");
         HttpResponseMessage cancelResponse = await client.SendAsync(cancelReq);
 
         Assert.Equal(HttpStatusCode.OK, cancelResponse.StatusCode);
