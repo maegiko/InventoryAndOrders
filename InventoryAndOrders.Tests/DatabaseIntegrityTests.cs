@@ -65,6 +65,8 @@ public class DatabaseIntegrityTests
 
         CreateOrderResponse? createdOrder = await response.Content.ReadFromJsonAsync<CreateOrderResponse>();
         Assert.NotNull(createdOrder);
+        Assert.Equal("Pending", createdOrder.OrderStatus);
+        Assert.Equal("Unpaid", createdOrder.PaymentStatus);
         Assert.Equal(30m, createdOrder.TotalPrice);
 
         using SqliteConnection conn = OpenTestConnection(factory);
@@ -149,6 +151,8 @@ public class DatabaseIntegrityTests
 
         CreateOrderResponse? createdOrder = await response.Content.ReadFromJsonAsync<CreateOrderResponse>();
         Assert.NotNull(createdOrder);
+        Assert.Equal("Pending", createdOrder.OrderStatus);
+        Assert.Equal("Unpaid", createdOrder.PaymentStatus);
         Assert.Equal(15m, createdOrder.TotalPrice);
 
         using SqliteConnection conn = OpenTestConnection(factory);

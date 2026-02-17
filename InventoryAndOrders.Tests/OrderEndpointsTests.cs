@@ -25,6 +25,8 @@ public class OrderEndpointsTests
         Assert.NotNull(created);
         Assert.False(string.IsNullOrWhiteSpace(created.OrderNumber));
         Assert.False(string.IsNullOrWhiteSpace(created.GuestToken));
+        Assert.Equal("Pending", created.OrderStatus);
+        Assert.Equal("Unpaid", created.PaymentStatus);
         Assert.Equal($"/orders/{created.OrderNumber}", response.Headers.Location?.ToString());
     }
 
