@@ -148,9 +148,10 @@ public class OrderServices
             ";
 
             int rowsAffected = conn.Execute(
-             reserveSql,
-             new { ProductId = item.ProductId, Quantity = item.Quantity },
-             transaction);
+                reserveSql,
+                new { ProductId = item.ProductId, Quantity = item.Quantity },
+                transaction
+            );
 
             if (rowsAffected != 1)
             {
@@ -222,5 +223,95 @@ public class OrderServices
             PaymentStatus = order.PaymentStatus.ToString(),
             Items = items
         };
+    }
+
+    public CancelOrderResponse CancelOrder(string orderNumber, string guestToken)
+    {
+        using SqliteConnection conn = _db.CreateConnection();
+        conn.Open();
+        using SqliteTransaction transaction = conn.BeginTransaction();
+
+        try
+        {
+            Order? order = conn.QuerySingleOrDefault<Order>(
+                "SELECT * FROM Orders WHERE OrderNumber = @OrderNumber AND GuestToken = @GuestToken",
+                new { OrderNumber = orderNumber, GuestToken = guestToken }, 
+                transaction
+            );
+
+            if (order is null) throw new InvalidOrderException();
+            if (order.OrderStatus != OrderStatus.Pending || order.PaymentStatus != PaymentStatus.Unpaid) throw new OrderStatusException(orderNumber);
+
+            List<CreateOrderItem> items = CreateItemListFromOrder(conn, transaction, order.Id);
+            UnreserveStock(conn, transaction, items);
+
+            string nowUtc = DateTimeOffset.UtcNow.ToString("O");
+
+            string cancelSql = @"
+                UPDATE Orders
+                SET OrderStatus = @OrderStatus,
+                    CancelledAt = @CancelledAt,
+                    ReservationStatus = @ReservationStatus
+                WHERE OrderNumber = @OrderNumber AND GuestToken = @GuestToken;
+            ";
+            int rowsAffected = conn.Execute(
+                cancelSql, 
+                new 
+                { 
+                    OrderStatus = OrderStatus.Cancelled, 
+                    CancelledAt = nowUtc, 
+                    ReservationStatus = ReservationStatus.Cancelled,
+                    OrderNumber = orderNumber, 
+                    GuestToken = guestToken
+                }, 
+                transaction
+            );
+
+            if (rowsAffected != 1) throw new OrderCancelException();
+
+            transaction.Commit();
+            
+            return new CancelOrderResponse
+            {
+                OrderNumber = orderNumber,
+                OrderStatus = OrderStatus.Cancelled.ToString()
+            };
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    private static List<CreateOrderItem> CreateItemListFromOrder(
+        SqliteConnection conn,
+        SqliteTransaction transaction,
+        int orderId)
+    {
+        // WARNING: This method assumes a non-null Order and is used within a transaction
+        string itemSql = @"
+        SELECT ProductId, Quantity FROM OrderItems
+        WHERE OrderId = @Id;
+        ";
+
+        return conn.Query<CreateOrderItem>(itemSql, new { Id = orderId }, transaction).ToList();
+    }
+
+    private static void UnreserveStock(
+        SqliteConnection conn,
+        SqliteTransaction transaction,
+        List<CreateOrderItem> items)
+    {
+        foreach(CreateOrderItem item in items)
+        {
+            int rowsAffected = conn.Execute(@"
+                UPDATE Products
+                SET ReservedStock = ReservedStock - @Quantity
+                WHERE Id = @ProductId AND ReservedStock >= @Quantity;
+            ", new { ProductId = item.ProductId, Quantity = item.Quantity }, transaction);
+
+            if (rowsAffected != 1) throw new OrderCancelException();
+        }
     }
 }
