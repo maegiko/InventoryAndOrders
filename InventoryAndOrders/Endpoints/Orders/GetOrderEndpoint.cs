@@ -52,7 +52,7 @@ public class GetOrderEndpoint : Endpoint<GetOrderRequest, GetOrderResponse>
         {
             GetOrderResponse res = _orders.GetOrder(req.OrderNumber, req.GuestToken);
             await Send.OkAsync(res, ct);
-        } 
+        }
         catch (InvalidOrderException ex)
         {
             await Send.ResultAsync(

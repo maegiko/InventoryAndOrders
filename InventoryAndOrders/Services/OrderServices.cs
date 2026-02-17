@@ -235,7 +235,7 @@ public class OrderServices
         {
             Order? order = conn.QuerySingleOrDefault<Order>(
                 "SELECT * FROM Orders WHERE OrderNumber = @OrderNumber AND GuestToken = @GuestToken",
-                new { OrderNumber = orderNumber, GuestToken = guestToken }, 
+                new { OrderNumber = orderNumber, GuestToken = guestToken },
                 transaction
             );
 
@@ -255,22 +255,22 @@ public class OrderServices
                 WHERE OrderNumber = @OrderNumber AND GuestToken = @GuestToken;
             ";
             int rowsAffected = conn.Execute(
-                cancelSql, 
-                new 
-                { 
-                    OrderStatus = OrderStatus.Cancelled, 
-                    CancelledAt = nowUtc, 
+                cancelSql,
+                new
+                {
+                    OrderStatus = OrderStatus.Cancelled,
+                    CancelledAt = nowUtc,
                     ReservationStatus = ReservationStatus.Cancelled,
-                    OrderNumber = orderNumber, 
+                    OrderNumber = orderNumber,
                     GuestToken = guestToken
-                }, 
+                },
                 transaction
             );
 
             if (rowsAffected != 1) throw new OrderCancelException();
 
             transaction.Commit();
-            
+
             return new CancelOrderResponse
             {
                 OrderNumber = orderNumber,
@@ -303,7 +303,7 @@ public class OrderServices
         SqliteTransaction transaction,
         List<CreateOrderItem> items)
     {
-        foreach(CreateOrderItem item in items)
+        foreach (CreateOrderItem item in items)
         {
             int rowsAffected = conn.Execute(@"
                 UPDATE Products
