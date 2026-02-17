@@ -1,4 +1,5 @@
 using InventoryAndOrders.Models;
+using FastEndpoints;
 
 namespace InventoryAndOrders.DTOs;
 
@@ -13,4 +14,12 @@ public class CreateOrderItem
 {
     public int ProductId { get; set; }
     public int Quantity { get; set; }
+}
+
+public class GetOrderRequest
+{
+    [BindFrom("orderNumber")]
+    public string OrderNumber { get; set; } = "";
+    [FromHeader("X-Guest-Token")]
+    public string GuestToken { get; set; } = "";
 }
