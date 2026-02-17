@@ -1,5 +1,3 @@
-using InventoryAndOrders.Enums;
-
 namespace InventoryAndOrders.DTOs;
 
 public class CreateOrderResponse
