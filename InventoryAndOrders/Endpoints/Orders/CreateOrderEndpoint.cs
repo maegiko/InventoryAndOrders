@@ -16,7 +16,7 @@ public class CreateOrderEndpoint : Endpoint<CreateOrderRequest, CreateOrderRespo
 
     public override void Configure()
     {
-        Post("orders/checkout");
+        Post("orders/create");
         AllowAnonymous();
 
         Description(b => b
