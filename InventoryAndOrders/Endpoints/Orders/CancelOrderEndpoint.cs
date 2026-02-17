@@ -1,11 +1,13 @@
 using FastEndpoints;
+using FluentValidation.Results;
 using InventoryAndOrders.DTOs;
 using InventoryAndOrders.Services;
 using InventoryAndOrders.Services.Exceptions;
+using InventoryAndOrders.Validators.Orders;
 
 namespace InventoryAndOrders.Endpoints.Orders;
 
-public class CancelOrderEndpoint : Endpoint<GetOrderRequest, CancelOrderResponse>
+public class CancelOrderEndpoint : EndpointWithoutRequest<object>
 {
     private readonly OrderServices _orders;
 
@@ -23,7 +25,7 @@ public class CancelOrderEndpoint : Endpoint<GetOrderRequest, CancelOrderResponse
             .Produces<CancelOrderResponse>(200)
             .Produces<ApiErrorResponse>(404)
             .Produces<ApiErrorResponse>(409)
-            .Produces<ErrorResponse>(400)
+            .Produces<ApiErrorResponse>(400)
         );
 
         Summary(s =>
@@ -46,7 +48,7 @@ public class CancelOrderEndpoint : Endpoint<GetOrderRequest, CancelOrderResponse
                 - Order state changed concurrently
                 """
             );
-            s.Response<ErrorResponse>(
+            s.Response<ApiErrorResponse>(
                 400,
                 """
                 If any of the following is true:
@@ -57,8 +59,22 @@ public class CancelOrderEndpoint : Endpoint<GetOrderRequest, CancelOrderResponse
         });
     }
 
-    public override async Task HandleAsync(GetOrderRequest req, CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
+        GetOrderRequest req = new()
+        {
+            OrderNumber = Route<string>("orderNumber") ?? "",
+            GuestToken = HttpContext.Request.Headers["X-Guest-Token"].ToString()
+        };
+
+        ValidationResult validation = await new GetOrderRequestValidator().ValidateAsync(req, ct);
+        if (!validation.IsValid)
+        {
+            string message = string.Join(" ", validation.Errors.Select(x => x.ErrorMessage).Distinct());
+            await Send.ResponseAsync(new ApiErrorResponse { Message = message }, StatusCodes.Status400BadRequest, ct);
+            return;
+        }
+
         try
         {
             CancelOrderResponse res = _orders.CancelOrder(req.OrderNumber, req.GuestToken);
