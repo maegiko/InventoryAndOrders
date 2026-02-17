@@ -102,8 +102,8 @@ public class OrderServices
             {
                 OrderNumber = orderNumber,
                 GuestToken = guestToken,
-                OrderStatus = OrderStatus.Pending,
-                PaymentStatus = PaymentStatus.Unpaid,
+                OrderStatus = OrderStatus.Pending.ToString(),
+                PaymentStatus = PaymentStatus.Unpaid.ToString(),
                 TotalPrice = totalPrice
             };
         }
@@ -193,5 +193,34 @@ public class OrderServices
         IReadOnlyDictionary<int, Product> products)
     {
         return items.Sum(i => products[i.ProductId].Price * i.Quantity);
+    }
+
+    public GetOrderResponse GetOrder(string orderNumber, string guestToken)
+    {
+        using SqliteConnection conn = _db.CreateConnection();
+
+        Order? order = conn.QuerySingleOrDefault<Order>(
+            "SELECT * FROM Orders WHERE OrderNumber = @OrderNumber AND GuestToken = @GuestToken",
+            new { OrderNumber = orderNumber, GuestToken = guestToken }
+        );
+
+        if (order is null) throw new InvalidOrderException();
+
+        string getProductsSql = @"
+            SELECT ProductName, Quantity FROM OrderItems
+            WHERE OrderId = @OrderId
+        ";
+
+        List<GetOrderItem> items = conn.Query<GetOrderItem>(
+            getProductsSql,
+            new { OrderId = order.Id }).ToList();
+
+        return new GetOrderResponse
+        {
+            OrderNumber = orderNumber,
+            OrderStatus = order.OrderStatus.ToString(),
+            PaymentStatus = order.PaymentStatus.ToString(),
+            Items = items
+        };
     }
 }
