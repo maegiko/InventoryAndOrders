@@ -19,6 +19,9 @@ public class AuthServices
 
     public RegisterResponse Register(string username, string email, string password)
     {
+        email = email.Trim().ToLowerInvariant();
+        username = username.Trim().ToLowerInvariant();
+
         ValidatePassword(password);
 
         using SqliteConnection conn = _db.CreateConnection();
