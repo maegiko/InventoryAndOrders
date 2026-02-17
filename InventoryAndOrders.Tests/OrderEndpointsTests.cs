@@ -16,7 +16,7 @@ public class OrderEndpointsTests
         Product product = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Book", totalStock: 5));
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/checkout",
+            "/orders/checkout",
             ApiTestData.NewOrder(product.Id, quantity: 2));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -37,7 +37,7 @@ public class OrderEndpointsTests
         using HttpClient client = factory.CreateClient();
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/checkout",
+            "/orders/checkout",
             ApiTestData.NewOrder(productId: 999999, quantity: 1));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -52,7 +52,7 @@ public class OrderEndpointsTests
         Product product = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Monitor", totalStock: 1));
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/checkout",
+            "/orders/checkout",
             ApiTestData.NewOrder(product.Id, quantity: 5));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -68,7 +68,7 @@ public class OrderEndpointsTests
         invalid.CustomerInfo.FirstName = "";
         invalid.Items = [];
 
-        HttpResponseMessage response = await client.PostAsJsonAsync("/checkout", invalid);
+        HttpResponseMessage response = await client.PostAsJsonAsync("/orders/checkout", invalid);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
