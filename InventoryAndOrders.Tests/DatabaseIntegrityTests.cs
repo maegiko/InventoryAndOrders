@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using InventoryAndOrders.Data;
 using InventoryAndOrders.DTOs;
+using InventoryAndOrders.Enums;
 using InventoryAndOrders.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -178,6 +180,59 @@ public class DatabaseIntegrityTests
             """,
             new SqliteParameter("@OrderNumber", createdOrder.OrderNumber));
         Assert.Equal(3, mergedQuantity);
+    }
+
+    [Fact]
+    public async Task CancelOrder_UpdatesOrderState_AndUnreservesStock()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient();
+
+        Product createdProduct = await CreateProductAsync(
+            client,
+            ApiTestData.NewProduct(name: "Dock", price: 15m, totalStock: 10));
+
+        HttpResponseMessage createResponse = await client.PostAsJsonAsync(
+            "/orders/create",
+            ApiTestData.NewOrder(createdProduct.Id, quantity: 3));
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        CreateOrderResponse? createdOrder = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>();
+        Assert.NotNull(createdOrder);
+
+        using HttpRequestMessage cancelReq = new(HttpMethod.Post, $"/orders/{createdOrder.OrderNumber}/cancel");
+        cancelReq.Headers.Add("X-Guest-Token", createdOrder.GuestToken);
+        cancelReq.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        HttpResponseMessage cancelResponse = await client.SendAsync(cancelReq);
+
+        Assert.Equal(HttpStatusCode.OK, cancelResponse.StatusCode);
+
+        using SqliteConnection conn = OpenTestConnection(factory);
+
+        long reservedStock = ExecuteScalar<long>(
+            conn,
+            "SELECT ReservedStock FROM Products WHERE Id = @ProductId;",
+            new SqliteParameter("@ProductId", createdProduct.Id));
+        Assert.Equal(0, reservedStock);
+
+        long orderStatus = ExecuteScalar<long>(
+            conn,
+            "SELECT OrderStatus FROM Orders WHERE OrderNumber = @OrderNumber;",
+            new SqliteParameter("@OrderNumber", createdOrder.OrderNumber));
+        Assert.Equal((long)OrderStatus.Cancelled, orderStatus);
+
+        long reservationStatus = ExecuteScalar<long>(
+            conn,
+            "SELECT ReservationStatus FROM Orders WHERE OrderNumber = @OrderNumber;",
+            new SqliteParameter("@OrderNumber", createdOrder.OrderNumber));
+        Assert.Equal((long)ReservationStatus.Cancelled, reservationStatus);
+
+        object? cancelledAt = ExecuteScalar<object>(
+            conn,
+            "SELECT CancelledAt FROM Orders WHERE OrderNumber = @OrderNumber;",
+            new SqliteParameter("@OrderNumber", createdOrder.OrderNumber));
+        Assert.NotNull(cancelledAt);
+        Assert.False(string.IsNullOrWhiteSpace(cancelledAt.ToString()));
     }
 
     private static SqliteConnection OpenTestConnection(TestApiFactory factory)

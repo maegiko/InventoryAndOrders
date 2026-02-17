@@ -45,4 +45,59 @@ public class OrderServicesTests
         Assert.Throws<InvalidOrderException>(() =>
             orders.GetOrder(createdOrder.OrderNumber, "INVALID-TOKEN"));
     }
+
+    [Fact]
+    public void CancelOrder_WithValidCredentials_ReturnsCancelledResponse_AndUnreservesStock()
+    {
+        using TestApiFactory factory = new();
+        using IServiceScope scope = factory.Services.CreateScope();
+
+        ProductServices products = scope.ServiceProvider.GetRequiredService<ProductServices>();
+        OrderServices orders = scope.ServiceProvider.GetRequiredService<OrderServices>();
+
+        Product createdProduct = products.Create(ApiTestData.NewProduct(name: "Speaker", totalStock: 8));
+        CreateOrderResponse createdOrder = orders.CreateOrder(ApiTestData.NewOrder(createdProduct.Id, quantity: 3));
+
+        CancelOrderResponse cancelled = orders.CancelOrder(createdOrder.OrderNumber, createdOrder.GuestToken);
+        Product? productAfterCancel = products.Get(createdProduct.Id);
+
+        Assert.Equal(createdOrder.OrderNumber, cancelled.OrderNumber);
+        Assert.Equal("Cancelled", cancelled.OrderStatus);
+        Assert.NotNull(productAfterCancel);
+        Assert.Equal(0, productAfterCancel.ReservedStock);
+    }
+
+    [Fact]
+    public void CancelOrder_WithInvalidCredentials_ThrowsInvalidOrderException()
+    {
+        using TestApiFactory factory = new();
+        using IServiceScope scope = factory.Services.CreateScope();
+
+        ProductServices products = scope.ServiceProvider.GetRequiredService<ProductServices>();
+        OrderServices orders = scope.ServiceProvider.GetRequiredService<OrderServices>();
+
+        Product createdProduct = products.Create(ApiTestData.NewProduct(name: "Camera", totalStock: 4));
+        CreateOrderResponse createdOrder = orders.CreateOrder(ApiTestData.NewOrder(createdProduct.Id, quantity: 1));
+
+        Assert.Throws<InvalidOrderException>(() =>
+            orders.CancelOrder(createdOrder.OrderNumber, "INVALID-TOKEN"));
+    }
+
+    [Fact]
+    public void CancelOrder_WhenAlreadyCancelled_ThrowsOrderStatusException()
+    {
+        using TestApiFactory factory = new();
+        using IServiceScope scope = factory.Services.CreateScope();
+
+        ProductServices products = scope.ServiceProvider.GetRequiredService<ProductServices>();
+        OrderServices orders = scope.ServiceProvider.GetRequiredService<OrderServices>();
+
+        Product createdProduct = products.Create(ApiTestData.NewProduct(name: "Headset", totalStock: 4));
+        CreateOrderResponse createdOrder = orders.CreateOrder(ApiTestData.NewOrder(createdProduct.Id, quantity: 1));
+
+        orders.CancelOrder(createdOrder.OrderNumber, createdOrder.GuestToken);
+
+        Assert.Throws<OrderStatusException>(() =>
+            orders.CancelOrder(createdOrder.OrderNumber, createdOrder.GuestToken));
+    }
 }

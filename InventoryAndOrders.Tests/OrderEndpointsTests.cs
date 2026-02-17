@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using InventoryAndOrders.DTOs;
 using InventoryAndOrders.Models;
 using System.Text.Json;
@@ -153,6 +154,71 @@ public class OrderEndpointsTests
         Assert.False(string.IsNullOrWhiteSpace(error.Message));
     }
 
+    [Fact]
+    public async Task CancelOrder_WithValidCredentials_Returns200_AndCancelledPayload()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient();
+
+        Product product = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Phone", totalStock: 5));
+        CreateOrderResponse created = await CreateOrderAsync(client, ApiTestData.NewOrder(product.Id, quantity: 2));
+
+        HttpResponseMessage response = await CancelOrderAsync(client, created.OrderNumber, created.GuestToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        CancelOrderResponse? cancelled = await response.Content.ReadFromJsonAsync<CancelOrderResponse>();
+        Assert.NotNull(cancelled);
+        Assert.Equal(created.OrderNumber, cancelled.OrderNumber);
+        Assert.Equal("Cancelled", cancelled.OrderStatus);
+    }
+
+    [Fact]
+    public async Task CancelOrder_WithMissingGuestToken_Returns400()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient();
+
+        using HttpRequestMessage req = new(HttpMethod.Post, "/orders/ORD-000001/cancel");
+        req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+        HttpResponseMessage response = await client.SendAsync(req);
+        string content = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("\"statusCode\":400", content);
+        Assert.Contains("\"errors\"", content);
+    }
+
+    [Fact]
+    public async Task CancelOrder_WithInvalidCredentials_Returns404()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient();
+
+        Product product = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Router", totalStock: 5));
+        CreateOrderResponse created = await CreateOrderAsync(client, ApiTestData.NewOrder(product.Id, quantity: 1));
+
+        HttpResponseMessage response = await CancelOrderAsync(client, created.OrderNumber, "BAD-TOKEN");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CancelOrder_WhenAlreadyCancelled_Returns409()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient();
+
+        Product product = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Webcam", totalStock: 5));
+        CreateOrderResponse created = await CreateOrderAsync(client, ApiTestData.NewOrder(product.Id, quantity: 1));
+
+        HttpResponseMessage first = await CancelOrderAsync(client, created.OrderNumber, created.GuestToken);
+        HttpResponseMessage second = await CancelOrderAsync(client, created.OrderNumber, created.GuestToken);
+
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
+    }
+
     private static async Task<Product> CreateProductAsync(HttpClient client, CreateProductRequest request)
     {
         HttpResponseMessage response = await client.PostAsJsonAsync("/products", request);
@@ -171,5 +237,14 @@ public class OrderEndpointsTests
         CreateOrderResponse? order = await response.Content.ReadFromJsonAsync<CreateOrderResponse>();
         Assert.NotNull(order);
         return order;
+    }
+
+    private static async Task<HttpResponseMessage> CancelOrderAsync(HttpClient client, string orderNumber, string guestToken)
+    {
+        using HttpRequestMessage req = new(HttpMethod.Post, $"/orders/{orderNumber}/cancel");
+        req.Headers.Add("X-Guest-Token", guestToken);
+        req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+        return await client.SendAsync(req);
     }
 }
