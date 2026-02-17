@@ -22,3 +22,9 @@ public class GetOrderItem
     public string ProductName { get; set; } = "";
     public int Quantity { get; set; }
 }
+
+public class CancelOrderResponse
+{
+    public string OrderNumber { get; set; } = "";
+    public string OrderStatus { get; set; } = "";
+}
