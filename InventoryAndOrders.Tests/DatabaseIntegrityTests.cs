@@ -58,7 +58,7 @@ public class DatabaseIntegrityTests
             ApiTestData.NewProduct(name: "Notebook", price: 10m, totalStock: 10));
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/orders/checkout",
+            "/orders/create",
             ApiTestData.NewOrder(createdProduct.Id, quantity: 3));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -110,7 +110,7 @@ public class DatabaseIntegrityTests
             ApiTestData.NewProduct(name: "SSD", price: 50m, totalStock: 1));
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/orders/checkout",
+            "/orders/create",
             ApiTestData.NewOrder(createdProduct.Id, quantity: 5));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -146,7 +146,7 @@ public class DatabaseIntegrityTests
             Quantity = 2
         });
 
-        HttpResponseMessage response = await client.PostAsJsonAsync("/orders/checkout", request);
+        HttpResponseMessage response = await client.PostAsJsonAsync("/orders/create", request);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         CreateOrderResponse? createdOrder = await response.Content.ReadFromJsonAsync<CreateOrderResponse>();
