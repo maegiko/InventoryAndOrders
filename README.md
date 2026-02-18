@@ -175,6 +175,9 @@ Content-Type: application/json
   "password": "ValidPass123!"
 }
 ```
+> [!NOTE]
+> - This endpoint will make any registered user staff!
+> - In a production setting, I would have set up this endpoint to require a unique staff token (only accessible by staff members)
 
 Login
 ```json
