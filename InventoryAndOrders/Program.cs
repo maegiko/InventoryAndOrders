@@ -19,6 +19,7 @@ if (connectionString is null)
 builder.Services.AddSingleton(new Db(connectionString));
 builder.Services.AddScoped<ProductServices>();
 builder.Services.AddScoped<OrderServices>();
+builder.Services.AddScoped<AuthServices>();
 
 WebApplication app = builder.Build();
 
