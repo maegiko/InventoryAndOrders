@@ -22,6 +22,7 @@ public class DatabaseIntegrityTests
         string[] productColumns = GetColumnNames(conn, "Products");
         string[] orderColumns = GetColumnNames(conn, "Orders");
         string[] orderItemColumns = GetColumnNames(conn, "OrderItems");
+        string[] accountColumns = GetColumnNames(conn, "Accounts");
 
         Assert.Contains("Id", productColumns);
         Assert.Contains("Name", productColumns);
@@ -46,6 +47,110 @@ public class DatabaseIntegrityTests
         Assert.Contains("ProductName", orderItemColumns);
         Assert.Contains("UnitPrice", orderItemColumns);
         Assert.Contains("Quantity", orderItemColumns);
+
+        Assert.Contains("Id", accountColumns);
+        Assert.Contains("Username", accountColumns);
+        Assert.Contains("Email", accountColumns);
+        Assert.Contains("PasswordHash", accountColumns);
+        Assert.Contains("CreatedAt", accountColumns);
+    }
+
+    [Fact]
+    public async Task Register_WritesAccountRow_AndStoresPasswordHash()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient();
+
+        RegisterRequest req = new()
+        {
+            Username = "DbUser",
+            Email = "DbUser@Example.com",
+            Password = "ValidPass123!"
+        };
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/auth/register", req);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        RegisterResponse? created = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+        Assert.NotNull(created);
+
+        using SqliteConnection conn = OpenTestConnection(factory);
+
+        long rowCount = ExecuteScalar<long>(
+            conn,
+            "SELECT COUNT(*) FROM Accounts WHERE Id = @Id;",
+            new SqliteParameter("@Id", created.Id));
+        Assert.Equal(1, rowCount);
+
+        string username = ExecuteScalar<string>(
+            conn,
+            "SELECT Username FROM Accounts WHERE Id = @Id;",
+            new SqliteParameter("@Id", created.Id));
+        Assert.Equal("dbuser", username);
+
+        string email = ExecuteScalar<string>(
+            conn,
+            "SELECT Email FROM Accounts WHERE Id = @Id;",
+            new SqliteParameter("@Id", created.Id));
+        Assert.Equal("dbuser@example.com", email);
+
+        string passwordHash = ExecuteScalar<string>(
+            conn,
+            "SELECT PasswordHash FROM Accounts WHERE Id = @Id;",
+            new SqliteParameter("@Id", created.Id));
+        Assert.NotEqual(req.Password, passwordHash);
+        Assert.StartsWith("$2", passwordHash, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Accounts_EnforcesUniqueUsernameAndEmail()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient _ = factory.CreateClient();
+        using SqliteConnection conn = OpenTestConnection(factory);
+
+        using (SqliteCommand insertFirst = conn.CreateCommand())
+        {
+            insertFirst.CommandText = """
+                INSERT INTO Accounts (Username, Email, PasswordHash, CreatedAt)
+                VALUES (@Username, @Email, @PasswordHash, @CreatedAt);
+            """;
+            insertFirst.Parameters.AddWithValue("@Username", "unique-user");
+            insertFirst.Parameters.AddWithValue("@Email", "unique@example.com");
+            insertFirst.Parameters.AddWithValue("@PasswordHash", "hash-a");
+            insertFirst.Parameters.AddWithValue("@CreatedAt", DateTimeOffset.UtcNow.ToString("O"));
+            insertFirst.ExecuteNonQuery();
+        }
+
+        using (SqliteCommand insertDuplicateUsername = conn.CreateCommand())
+        {
+            insertDuplicateUsername.CommandText = """
+                INSERT INTO Accounts (Username, Email, PasswordHash, CreatedAt)
+                VALUES (@Username, @Email, @PasswordHash, @CreatedAt);
+            """;
+            insertDuplicateUsername.Parameters.AddWithValue("@Username", "unique-user");
+            insertDuplicateUsername.Parameters.AddWithValue("@Email", "other@example.com");
+            insertDuplicateUsername.Parameters.AddWithValue("@PasswordHash", "hash-b");
+            insertDuplicateUsername.Parameters.AddWithValue("@CreatedAt", DateTimeOffset.UtcNow.ToString("O"));
+
+            SqliteException usernameEx = Assert.Throws<SqliteException>(() => insertDuplicateUsername.ExecuteNonQuery());
+            Assert.Equal(19, usernameEx.SqliteErrorCode);
+        }
+
+        using (SqliteCommand insertDuplicateEmail = conn.CreateCommand())
+        {
+            insertDuplicateEmail.CommandText = """
+                INSERT INTO Accounts (Username, Email, PasswordHash, CreatedAt)
+                VALUES (@Username, @Email, @PasswordHash, @CreatedAt);
+            """;
+            insertDuplicateEmail.Parameters.AddWithValue("@Username", "other-user");
+            insertDuplicateEmail.Parameters.AddWithValue("@Email", "unique@example.com");
+            insertDuplicateEmail.Parameters.AddWithValue("@PasswordHash", "hash-c");
+            insertDuplicateEmail.Parameters.AddWithValue("@CreatedAt", DateTimeOffset.UtcNow.ToString("O"));
+
+            SqliteException emailEx = Assert.Throws<SqliteException>(() => insertDuplicateEmail.ExecuteNonQuery());
+            Assert.Equal(19, emailEx.SqliteErrorCode);
+        }
     }
 
     [Fact]
