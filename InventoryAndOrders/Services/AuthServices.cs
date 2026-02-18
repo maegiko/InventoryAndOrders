@@ -54,7 +54,7 @@ public class AuthServices
                 @Email,
                 @PasswordHash,
                 @NowUtc
-            )
+            );
             SELECT last_insert_rowid();
         ";
 
@@ -72,6 +72,33 @@ public class AuthServices
     private static void ValidatePassword(string password)
     {
         Result result = Core.EvaluatePassword(password);
-        if (result.Score < 2) throw new PasswordWeakException();
+        if (result.Score >= 2) return;
+
+        string message = "Password is too weak.";
+        if (result.Feedback is not null)
+        {
+            List<string> feedback = [];
+
+            if (!string.IsNullOrWhiteSpace(result.Feedback.Warning))
+            {
+                feedback.Add(result.Feedback.Warning.Trim());
+            }
+
+            if (result.Feedback.Suggestions is { Count: > 0 })
+            {
+                string suggestions = string.Join(" ", result.Feedback.Suggestions.Where(s => !string.IsNullOrWhiteSpace(s)));
+                if (!string.IsNullOrWhiteSpace(suggestions))
+                {
+                    feedback.Add(suggestions);
+                }
+            }
+
+            if (feedback.Count > 0)
+            {
+                message = $"{message} {string.Join(" ", feedback)}";
+            }
+        }
+
+        throw new PasswordWeakException(message);
     }
 }
