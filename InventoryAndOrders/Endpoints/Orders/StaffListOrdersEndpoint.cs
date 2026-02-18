@@ -4,18 +4,18 @@ using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints;
 
-public class ListOrdersEndpoint: EndpointWithoutRequest<IEnumerable<StaffOrderResponse>>
+public class StaffListOrdersEndpoint: EndpointWithoutRequest<IEnumerable<StaffOrderResponse>>
 {
     private readonly OrderServices _orders;
 
-    public ListOrdersEndpoint(OrderServices orders)
+    public StaffListOrdersEndpoint(OrderServices orders)
     {
         _orders = orders;
     }
 
     public override void Configure()
     {
-        Get("/orders");
+        Get("/staff/orders");
         Roles("staff");
     }
 
