@@ -21,13 +21,13 @@ public class GetProductEndpoint : Endpoint<GetProductByIdRequest, object>
 
         Description(b => b
             .Produces<ApiErrorResponse>(404)
-            .Produces<Product>(200)
+            .Produces<ProductResponse>(200)
         );
     }
 
     public override async Task HandleAsync(GetProductByIdRequest req, CancellationToken ct)
     {
-        Product? product = _products.Get(req.Id);
+        ProductResponse? product = _products.Get(req.Id);
 
         if (product is null)
         {

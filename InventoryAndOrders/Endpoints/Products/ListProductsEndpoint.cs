@@ -1,10 +1,10 @@
 using FastEndpoints;
-using InventoryAndOrders.Models;
+using InventoryAndOrders.DTOs;
 using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints.Products;
 
-public class ListProductsEndpoint : EndpointWithoutRequest<IEnumerable<Product>>
+public class ListProductsEndpoint : EndpointWithoutRequest<IEnumerable<ProductResponse>>
 {
     private readonly ProductServices _products;
 
