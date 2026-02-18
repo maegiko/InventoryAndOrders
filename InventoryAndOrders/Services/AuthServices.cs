@@ -134,9 +134,9 @@ public class AuthServices
             new { Username = username }
         );
 
-        if (account == null || !BCrypt.Net.BCrypt.Verify(password, account.PasswordHash)) 
+        if (account == null || !BCrypt.Net.BCrypt.Verify(password, account.PasswordHash))
             throw new IncorrectDetailsException();
-        
+
         string token = GenerateJwt(account.Id, account.Username, "staff");
         DateTime expiresAt = DateTime.UtcNow.AddHours(_expiryHours);
 
@@ -151,7 +151,7 @@ public class AuthServices
 
     private string GenerateJwt(int accountId, string username, string role)
     {
-        Claim[] claims = 
+        Claim[] claims =
         {
             new Claim(JwtRegisteredClaimNames.Sub, accountId.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, username),
