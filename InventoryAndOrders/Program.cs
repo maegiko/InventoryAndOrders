@@ -47,6 +47,7 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 WebApplication app = builder.Build();
 
