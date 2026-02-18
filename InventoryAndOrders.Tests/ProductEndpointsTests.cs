@@ -12,6 +12,7 @@ public class ProductEndpointsTests
     {
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
+        await TestAuthHelper.AuthenticateAsStaffAsync(client);
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/products",
@@ -31,6 +32,7 @@ public class ProductEndpointsTests
     {
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
+        await TestAuthHelper.AuthenticateAsStaffAsync(client);
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/products",
@@ -44,6 +46,7 @@ public class ProductEndpointsTests
     {
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
+        await TestAuthHelper.AuthenticateAsStaffAsync(client);
 
         await CreateProductAsync(client, ApiTestData.NewProduct(name: "Keyboard"));
         await CreateProductAsync(client, ApiTestData.NewProduct(name: "Mouse"));
@@ -60,6 +63,7 @@ public class ProductEndpointsTests
     {
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
+        await TestAuthHelper.AuthenticateAsStaffAsync(client);
 
         Product created = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Chair"));
 
@@ -75,6 +79,7 @@ public class ProductEndpointsTests
     {
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
+        await TestAuthHelper.AuthenticateAsStaffAsync(client);
 
         Product created = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Old Name"));
 
@@ -94,6 +99,7 @@ public class ProductEndpointsTests
     {
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
+        await TestAuthHelper.AuthenticateAsStaffAsync(client);
 
         Product created = await CreateProductAsync(client, ApiTestData.NewProduct(name: "Delete Me"));
 

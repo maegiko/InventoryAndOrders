@@ -23,7 +23,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>, IDisposable
             Dictionary<string, string?> inMemory = new()
             {
                 ["ConnectionStrings:inventory"] = ConnectionString,
-                ["Jwt:Key"] = "this-is-a-long-test-jwt-key-with-at-least-32-bytes",
+                ["Jwt:Key"] = "this-is-a-32-plus-byte-secret-key-for-jwt-signing",
                 ["Jwt:Issuer"] = "InventoryAndOrders",
                 ["Jwt:Audience"] = "InventoryAndOrders.Client",
                 ["Jwt:ExpiryInHours"] = "2"

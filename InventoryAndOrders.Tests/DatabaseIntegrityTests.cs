@@ -375,6 +375,11 @@ public class DatabaseIntegrityTests
 
     private static async Task<Product> CreateProductAsync(HttpClient client, CreateProductRequest request)
     {
+        if (client.DefaultRequestHeaders.Authorization is null)
+        {
+            await TestAuthHelper.AuthenticateAsStaffAsync(client);
+        }
+
         HttpResponseMessage response = await client.PostAsJsonAsync("/products", request);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
