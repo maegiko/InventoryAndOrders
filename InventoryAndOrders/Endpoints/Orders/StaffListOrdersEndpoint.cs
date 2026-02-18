@@ -4,7 +4,7 @@ using InventoryAndOrders.Services;
 
 namespace InventoryAndOrders.Endpoints;
 
-public class StaffListOrdersEndpoint: EndpointWithoutRequest<IEnumerable<StaffOrderResponse>>
+public class StaffListOrdersEndpoint : EndpointWithoutRequest<IEnumerable<StaffOrderResponse>>
 {
     private readonly OrderServices _orders;
 
