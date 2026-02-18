@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using InventoryAndOrders.DTOs;
 using InventoryAndOrders.Models;
+using System.Text.Json;
 
 namespace InventoryAndOrders.Tests;
 
@@ -51,7 +52,7 @@ public class ProductEndpointsTests
         await CreateProductAsync(client, ApiTestData.NewProduct(name: "Keyboard"));
         await CreateProductAsync(client, ApiTestData.NewProduct(name: "Mouse"));
 
-        Product[]? products = await client.GetFromJsonAsync<Product[]>("/products");
+        ProductResponse[]? products = await client.GetFromJsonAsync<ProductResponse[]>("/products");
 
         Assert.NotNull(products);
         Assert.Contains(products, p => p.Name == "Keyboard");
@@ -72,6 +73,19 @@ public class ProductEndpointsTests
 
         Assert.Equal(HttpStatusCode.OK, okResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, missingResponse.StatusCode);
+
+        string content = await okResponse.Content.ReadAsStringAsync();
+        ProductResponse? product = JsonSerializer.Deserialize<ProductResponse>(
+            content,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        );
+
+        Assert.NotNull(product);
+        Assert.Equal(created.Id, product.Id);
+        Assert.Equal("Chair", product.Name);
+        Assert.DoesNotContain("\"isDeleted\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"totalStock\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"reservedStock\"", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

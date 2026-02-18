@@ -59,12 +59,12 @@ public class OrderServicesTests
         CreateOrderResponse createdOrder = orders.CreateOrder(ApiTestData.NewOrder(createdProduct.Id, quantity: 3));
 
         CancelOrderResponse cancelled = orders.CancelOrder(createdOrder.OrderNumber, createdOrder.GuestToken);
-        Product? productAfterCancel = products.Get(createdProduct.Id);
+        ProductResponse? productAfterCancel = products.Get(createdProduct.Id);
 
         Assert.Equal(createdOrder.OrderNumber, cancelled.OrderNumber);
         Assert.Equal("Cancelled", cancelled.OrderStatus);
         Assert.NotNull(productAfterCancel);
-        Assert.Equal(0, productAfterCancel.ReservedStock);
+        Assert.Equal(8, productAfterCancel.AvailableStock);
     }
 
     [Fact]
