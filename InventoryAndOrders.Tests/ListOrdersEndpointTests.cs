@@ -15,7 +15,7 @@ public class ListOrdersEndpointTests
         using TestApiFactory factory = new();
         using HttpClient client = factory.CreateClient();
 
-        HttpResponseMessage response = await client.GetAsync("/orders");
+        HttpResponseMessage response = await client.GetAsync("/staff/orders");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -27,7 +27,7 @@ public class ListOrdersEndpointTests
         using HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "bad-token");
 
-        HttpResponseMessage response = await client.GetAsync("/orders");
+        HttpResponseMessage response = await client.GetAsync("/staff/orders");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -48,7 +48,7 @@ public class ListOrdersEndpointTests
         string token = await RegisterAndLoginAsync(client);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        HttpResponseMessage response = await client.GetAsync("/orders");
+        HttpResponseMessage response = await client.GetAsync("/staff/orders");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
