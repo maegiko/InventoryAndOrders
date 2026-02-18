@@ -1,8 +1,11 @@
 using InventoryAndOrders.Data;
+using InventoryAndOrders.DTOs;
 using InventoryAndOrders.Services;
 using InventoryAndOrders.Services.Exceptions;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace InventoryAndOrders.Tests;
 
@@ -73,5 +76,56 @@ public class AuthServicesTests
             auth.Register("weak-user", "weak@example.com", "password"));
 
         Assert.Contains("Password is too weak.", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Login_WithValidCredentials_ReturnsTokenWithExpectedClaims()
+    {
+        using TestApiFactory factory = new();
+        using IServiceScope scope = factory.Services.CreateScope();
+
+        AuthServices auth = scope.ServiceProvider.GetRequiredService<AuthServices>();
+
+        RegisterResponse created = auth.Register("service-login-user", "service-login@example.com", "ValidPass123!");
+        LoginResponse login = auth.Login("SERVICE-LOGIN-USER", "ValidPass123!");
+
+        Assert.True(login.Success);
+        Assert.Equal("Login successful.", login.Message);
+        Assert.False(string.IsNullOrWhiteSpace(login.Token));
+        Assert.True(login.ExpiresAt > DateTime.UtcNow);
+
+        JwtSecurityTokenHandler tokenHandler = new();
+        JwtSecurityToken token = tokenHandler.ReadJwtToken(login.Token);
+
+        Assert.Equal("InventoryAndOrders", token.Issuer);
+        Assert.Contains("InventoryAndOrders.Client", token.Audiences);
+        Assert.Equal(created.Id.ToString(), token.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
+        Assert.Equal("service-login-user", token.Claims.First(c => c.Type == JwtRegisteredClaimNames.UniqueName).Value);
+        Assert.Equal("staff", token.Claims.First(c => c.Type == ClaimTypes.Role).Value);
+    }
+
+    [Fact]
+    public void Login_WithWrongPassword_ThrowsIncorrectDetailsException()
+    {
+        using TestApiFactory factory = new();
+        using IServiceScope scope = factory.Services.CreateScope();
+
+        AuthServices auth = scope.ServiceProvider.GetRequiredService<AuthServices>();
+        auth.Register("service-wrong-pass", "service-wrong-pass@example.com", "ValidPass123!");
+
+        Assert.Throws<IncorrectDetailsException>(() =>
+            auth.Login("service-wrong-pass", "BadPassword123!"));
+    }
+
+    [Fact]
+    public void Login_WithUnknownUsername_ThrowsIncorrectDetailsException()
+    {
+        using TestApiFactory factory = new();
+        using IServiceScope scope = factory.Services.CreateScope();
+
+        AuthServices auth = scope.ServiceProvider.GetRequiredService<AuthServices>();
+
+        Assert.Throws<IncorrectDetailsException>(() =>
+            auth.Login("not-found-user", "AnyPassword123!"));
     }
 }
