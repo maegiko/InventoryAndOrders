@@ -73,7 +73,11 @@ using (IServiceScope scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
-    app.UseSwaggerUi();
+    app.UseSwaggerUi(c =>
+    {
+        c.DocExpansion = "list";
+        c.DefaultModelsExpandDepth = 0;
+    });
 }
 
 // app.UseHttpsRedirection();
