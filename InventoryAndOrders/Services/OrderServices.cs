@@ -314,4 +314,60 @@ public class OrderServices
             if (rowsAffected != 1) throw new OrderCancelException();
         }
     }
+
+    public IEnumerable<StaffOrderResponse> ListOrders()
+    {
+        using SqliteConnection conn = _db.CreateConnection();
+
+        IEnumerable<StaffOrderRow> rows = conn.Query<StaffOrderRow>(
+            @"
+            SELECT
+                OrderNumber,
+                CreatedAt,
+                LastEdited,
+                OrderStatus,
+                CancelledAt,
+                PaymentStatus,
+                ReservationStatus,
+                ReservedAt,
+                CustomerFirstName,
+                CustomerLastName,
+                CustomerEmail,
+                CustomerPhone,
+                ShipStreet,
+                ShipCity,
+                ShipPostcode,
+                ShipCountry,
+                TotalPrice
+            FROM Orders ORDER BY Id;
+            "
+        );
+
+        return rows.Select(r => new StaffOrderResponse
+        {
+            OrderNumber = r.OrderNumber,
+            CreatedAt = r.CreatedAt,
+            LastEdited = r.LastEdited,
+            OrderStatus = ((OrderStatus)r.OrderStatus).ToString(),
+            CancelledAt = r.CancelledAt,
+            PaymentStatus = ((PaymentStatus)r.PaymentStatus).ToString(),
+            ReservationStatus = ((ReservationStatus)r.ReservationStatus).ToString(),
+            ReservedAt = r.ReservedAt,
+            CustomerInfo = new CustomerInfo
+            {
+                FirstName = r.CustomerFirstName,
+                LastName = r.CustomerLastName,
+                Email = r.CustomerEmail,
+                Phone = r.CustomerPhone
+            },
+            ShippingAddress = new Address
+            {
+                Street = r.ShipStreet,
+                City = r.ShipCity,
+                Postcode = r.ShipPostcode,
+                Country = r.ShipCountry
+            },
+            TotalPrice = r.TotalPrice
+        });
+    }
 }
