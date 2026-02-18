@@ -23,3 +23,9 @@ public class GetOrderRequest
     [FromHeader("X-Guest-Token")]
     public string GuestToken { get; set; } = "";
 }
+
+public class StaffGetOrderRequest
+{
+    [BindFrom("orderNumber")]
+    public string OrderNumber { get; set; } = "";
+}
