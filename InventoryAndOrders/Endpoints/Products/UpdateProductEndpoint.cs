@@ -17,7 +17,7 @@ public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, object>
     public override void Configure()
     {
         Patch("/products/{id}");
-        AllowAnonymous();
+        Roles("staff");
 
         Description(b => b
             .Produces<Product>(200)

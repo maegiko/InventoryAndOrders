@@ -17,7 +17,7 @@ public class CreateProductEndpoint : Endpoint<CreateProductRequest, Product>
     public override void Configure()
     {
         Post("/products");
-        AllowAnonymous();
+        Roles("staff");
 
         Description(b => b
             .Produces<Product>(201)

@@ -16,7 +16,7 @@ public class DeleteProductEndpoint : Endpoint<GetProductByIdRequest, object>
     public override void Configure()
     {
         Delete("/products/{id}");
-        AllowAnonymous();
+        Roles("staff");
 
         Description(b => b
             .Produces<ApiErrorResponse>(404)
