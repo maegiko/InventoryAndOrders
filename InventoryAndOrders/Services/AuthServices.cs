@@ -155,7 +155,8 @@ public class AuthServices
         {
             new Claim(JwtRegisteredClaimNames.Sub, accountId.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, username),
-            new Claim(ClaimTypes.Role, role)
+            new Claim(ClaimTypes.Role, role),
+            new Claim("role", role)
         };
 
         SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
