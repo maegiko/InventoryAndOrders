@@ -1,7 +1,6 @@
 using Dapper;
 using InventoryAndOrders.Data;
 using InventoryAndOrders.DTOs;
-using InventoryAndOrders.Models;
 using InventoryAndOrders.Services.Exceptions;
 using Microsoft.Data.Sqlite;
 using Zxcvbn;
