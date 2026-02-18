@@ -16,10 +16,18 @@ public class ProductServices
     }
 
     // Get a list of all products
-    public IEnumerable<Product> List()
+    public IEnumerable<ProductResponse> List()
     {
         using SqliteConnection conn = _db.CreateConnection();
-        return conn.Query<Product>("SELECT * FROM Products WHERE IsDeleted = 0 ORDER BY Id");
+        return conn.Query<ProductResponse>(
+            @"SELECT 
+                Id, 
+                Name, 
+                Price,
+                TotalStock - ReservedStock AS AvailableStock
+            FROM Products WHERE IsDeleted = 0 ORDER BY Id
+            "
+        );
     }
 
     // Add a new product to Db
@@ -46,12 +54,17 @@ public class ProductServices
     }
 
     // Get the details of a single product 
-    public Product? Get(int id)
+    public ProductResponse? Get(int id)
     {
         using SqliteConnection conn = _db.CreateConnection();
 
-        return conn.QuerySingleOrDefault<Product>(
-            "SELECT * FROM Products WHERE Id = @Id AND IsDeleted = 0;",
+        return conn.QuerySingleOrDefault<ProductResponse>(
+            @"SELECT 
+                Id, 
+                Name, 
+                Price,
+                TotalStock - ReservedStock AS AvailableStock
+            FROM Products WHERE Id = @Id AND IsDeleted = 0;",
             new { Id = id }
         );
     }
