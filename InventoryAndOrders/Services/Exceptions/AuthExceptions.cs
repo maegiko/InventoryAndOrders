@@ -15,3 +15,11 @@ public class AccountExistsException : Exception
     {
     }
 }
+
+public class IncorrectDetailsException : Exception
+{
+    public IncorrectDetailsException()
+        : base("Username/Password is incorrect.")
+    {
+    }
+}
