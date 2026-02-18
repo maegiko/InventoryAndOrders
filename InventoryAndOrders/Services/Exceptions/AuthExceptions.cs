@@ -2,8 +2,8 @@ namespace InventoryAndOrders.Services.Exceptions;
 
 public class PasswordWeakException : Exception
 {
-    public PasswordWeakException()
-        : base("Password is too weak.")
+    public PasswordWeakException(string? message = null)
+        : base(string.IsNullOrWhiteSpace(message) ? "Password is too weak." : message)
     {
     }
 }
