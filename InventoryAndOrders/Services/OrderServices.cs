@@ -370,4 +370,63 @@ public class OrderServices
             TotalPrice = r.TotalPrice
         });
     }
+
+    public StaffOrderResponse StaffGetOrder(string orderNumber)
+    {
+        using SqliteConnection conn = _db.CreateConnection();
+
+        StaffOrderRow? rows = conn.QuerySingleOrDefault<StaffOrderRow>(
+            @"
+            SELECT 
+                OrderNumber,
+                CreatedAt,
+                LastEdited,
+                OrderStatus,
+                CancelledAt,
+                PaymentStatus,
+                ReservationStatus,
+                ReservedAt,
+                CustomerFirstName,
+                CustomerLastName,
+                CustomerEmail,
+                CustomerPhone,
+                ShipStreet,
+                ShipCity,
+                ShipPostcode,
+                ShipCountry,
+                TotalPrice
+            FROM Orders WHERE OrderNumber = @OrderNumber;
+            ",
+            new { OrderNumber = orderNumber }
+        );
+
+        if (rows is null) throw new InvalidOrderException();
+
+        return new StaffOrderResponse
+        {
+            OrderNumber = rows.OrderNumber,
+            CreatedAt = rows.CreatedAt,
+            LastEdited = rows.LastEdited,
+            OrderStatus = ((OrderStatus)rows.OrderStatus).ToString(),
+            CancelledAt = rows.CancelledAt,
+            PaymentStatus = ((PaymentStatus)rows.PaymentStatus).ToString(),
+            ReservationStatus = ((ReservationStatus)rows.ReservationStatus).ToString(),
+            ReservedAt = rows.ReservedAt,
+            CustomerInfo = new CustomerInfo
+            {
+                FirstName = rows.CustomerFirstName,
+                LastName = rows.CustomerLastName,
+                Email = rows.CustomerEmail,
+                Phone = rows.CustomerPhone
+            },
+            ShippingAddress = new Address
+            {
+                Street = rows.ShipStreet,
+                City = rows.ShipCity,
+                Postcode = rows.ShipPostcode,
+                Country = rows.ShipCountry
+            },
+            TotalPrice = rows.TotalPrice
+        };
+    }
 }
