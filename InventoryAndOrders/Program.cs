@@ -7,11 +7,18 @@ using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using InventoryAndOrders.Swagger;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddFastEndpoints().SwaggerDocument();
+builder.Services.AddFastEndpoints().SwaggerDocument(o =>
+{
+    o.DocumentSettings = s =>
+    {
+        s.OperationProcessors.Add(new CancelOrderHeaderOperationProcessor());
+    };
+});
 
 string? connectionString = builder.Configuration.GetConnectionString("inventory");
 if (connectionString is null)
