@@ -1,6 +1,6 @@
 # InventoryAndOrders API 📦🧾
 
-A FastEndpoints-based ASP.NET API for product inventory and order lifecycle management.
+A FastEndpoints-based ASP.NET API for product inventory and order lifecycle management. This API is intended for an e-commerce business (something like Gumtree).
 
 It includes:
 - guest order creation and tracking
