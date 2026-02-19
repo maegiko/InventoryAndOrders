@@ -18,6 +18,9 @@ It includes:
 - **Validation with clear error messages** using FastEndpoints validators.
 - **SQLite + Dapper** for a lightweight, testable persistence layer.
 
+> [!IMPORTANT]
+> - The register endpoint will make anyone staff! In a production setting, a unique staff token would be necessary to use this endpoint.
+
 ## Tech Stack 🛠️
 
 - .NET `10.0`
@@ -61,25 +64,25 @@ InventoryAndOrders/
 |  |- Endpoints/
 |  |  |- Auth/
 |  |  |- Orders/
-|  |  `- Products/
+|  |  |- Products/
 |  |- Enums/
 |  |- Models/
 |  |- Services/
-|  |  `- Exceptions/
+|  |  |- Exceptions/
 |  |- Swagger/
 |  |- Validators/
 |  |  |- Auth/
 |  |  |- Order/
-|  |  `- Product/
+|  |  |- Product/
 |  |- Program.cs
-|  `- appsettings.json
+|  |- appsettings.json
 |- InventoryAndOrders.Tests/
 |  |- *EndpointTests.cs
 |  |- *ServicesTests.cs
 |  |- DatabaseIntegrityTests.cs
 |  |- TestApiFactory.cs
-|  `- ApiTestData.cs
-`- InventoryAndOrders.sln
+|  |- ApiTestData.cs
+|- InventoryAndOrders.sln
 ```
 
 ## Endpoint Overview 🌐
