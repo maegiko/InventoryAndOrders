@@ -58,31 +58,31 @@ It includes:
 
 ```text
 InventoryAndOrders/
-|- InventoryAndOrders/
-|  |- Data/
-|  |- DTOs/
-|  |- Endpoints/
-|  |  |- Auth/
-|  |  |- Orders/
-|  |  |- Products/
-|  |- Enums/
-|  |- Models/
-|  |- Services/
-|  |  |- Exceptions/
-|  |- Swagger/
-|  |- Validators/
-|  |  |- Auth/
-|  |  |- Order/
-|  |  |- Product/
-|  |- Program.cs
-|  |- appsettings.json
-|- InventoryAndOrders.Tests/
-|  |- *EndpointTests.cs
-|  |- *ServicesTests.cs
-|  |- DatabaseIntegrityTests.cs
-|  |- TestApiFactory.cs
-|  |- ApiTestData.cs
-|- InventoryAndOrders.sln
+├── InventoryAndOrders/
+│   ├── Data/
+│   ├── DTOs/
+│   ├── Endpoints/
+│   │   ├── Auth/
+│   │   ├── Orders/
+│   │   └── Products/
+│   ├── Enums/
+│   ├── Models/
+│   ├── Services/
+│   │   └── Exceptions/
+│   ├── Swagger/
+│   ├── Validators/
+│   │   ├── Auth/
+│   │   ├── Order/
+│   │   └── Product/
+│   ├── Program.cs
+│   └── appsettings.json
+├── InventoryAndOrders.Tests/
+│   ├── *EndpointTests.cs
+│   ├── *ServicesTests.cs
+│   ├── DatabaseIntegrityTests.cs
+│   ├── TestApiFactory.cs
+│   └── ApiTestData.cs
+└── InventoryAndOrders.sln
 ```
 
 ## Endpoint Overview 🌐
